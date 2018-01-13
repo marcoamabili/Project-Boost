@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class Rocket : MonoBehaviour {
+public class Rocket : MonoBehaviour
+{
 
     [Range(0, 500)] [SerializeField] float rcsThrust = 100f;
     [Range(0, 2000)] [SerializeField] float mainThrust = 1000f;
@@ -17,29 +18,54 @@ public class Rocket : MonoBehaviour {
     [SerializeField] ParticleSystem successParticles;
     [SerializeField] ParticleSystem deathParticles;
 
-
+    bool timeUp = false;
+    LevelTime levelTime;
     Rigidbody rb;
     AudioSource audioSource;
 
-    public enum State {Alive, Transcending, Dying }
+    public enum State { Alive, Transcending, Dying }
     public State state = State.Alive;
-	
-	void Start ()
+    bool collisionsDisabled = false;
+
+    void Start()
     {
         rb = GetComponent<Rigidbody>();
-        audioSource = GetComponent<AudioSource>();        
+        audioSource = GetComponent<AudioSource>();
+        levelTime = FindObjectOfType<LevelTime>();
     }
-	
 
-	void Update ()
+
+    void Update()
     {
-        if (state == State.Alive)
+        if (state == State.Alive && !TimeUp())
         {
             RespondToThrustInput();
             RespondToRotateInput();
         }
-	}
 
+        if (TimeUp()) StartTimeUpSequence();
+
+        if (Debug.isDebugBuild) RespondToDebugKeys();
+    }
+
+    
+    private void RespondToDebugKeys() 
+    {
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            LoadNextLevel();
+        } else if (Input.GetKeyDown(KeyCode.C)) 
+        {
+            collisionsDisabled = !collisionsDisabled;
+        }
+    }
+
+    private bool TimeUp()
+    {
+        if (levelTime.GetSecondsLeft() <= 0) return true;
+        else return false;
+    }
+    
     private void RespondToRotateInput()
     {
         rb.freezeRotation = true;
@@ -80,7 +106,7 @@ public class Rocket : MonoBehaviour {
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (state != State.Alive) return; // just one hit then die ignoring collisions
+        if (state != State.Alive || collisionsDisabled) return; // just one hit then die ignoring collisions
 
         switch (collision.gameObject.tag)
         {
@@ -98,10 +124,22 @@ public class Rocket : MonoBehaviour {
     private void StartDeathSequence()
     {
         state = State.Dying;
+        DisappearWhenDead();
         audioSource.Stop();
         audioSource.PlayOneShot(death);
         deathParticles.Play();
-        Invoke("LoadCurrentScene", death.length);
+        Invoke("LoadCurrentLevel", death.length);
+    }
+
+    private void StartTimeUpSequence()
+    {
+        if(state != State.Alive) return;
+        state = State.Dying;
+        DisappearWhenDead();
+        audioSource.Stop();
+        audioSource.PlayOneShot(death);
+        deathParticles.Play();
+        Invoke("LoadCurrentLevel", death.length);
     }
 
     private void StartSuccessSequence()
@@ -110,10 +148,36 @@ public class Rocket : MonoBehaviour {
         audioSource.Stop();
         audioSource.PlayOneShot(success);
         successParticles.Play();
-        Invoke("LoadNextScene", levelLoadDelay);
+        Invoke("LoadNextLevel", levelLoadDelay);
     }
 
-    private void LoadNextScene()
+    void DisappearWhenDead()
+    {
+        DisableRenderers();
+        DisableLights();
+    }
+
+    private void DisableLights()
+    {
+        Light[] lights = GetComponentsInChildren<Light>();
+
+        foreach (var light in lights)
+        {
+            light.enabled = false;
+        }
+    }
+
+    private void DisableRenderers()
+    {
+        MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();
+
+        foreach (MeshRenderer renderer in renderers)
+        {
+            renderer.enabled = false;
+        }
+    }
+
+    private void LoadNextLevel()
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
 
@@ -128,8 +192,10 @@ public class Rocket : MonoBehaviour {
 
     }
 
-    private void LoadCurrentScene()
+    private void LoadCurrentLevel()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
+
+
 }
