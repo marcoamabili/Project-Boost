@@ -22,9 +22,9 @@ public class Rocket : MonoBehaviour
     LevelTime levelTime;
     Rigidbody rb;
     AudioSource audioSource;
+    Fuel fuel;
 
-    public enum State { Alive, Transcending, Dying }
-    public State state = State.Alive;
+    bool isTransitioning = false;
     bool collisionsDisabled = false;
 
     void Start()
@@ -32,18 +32,21 @@ public class Rocket : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         audioSource = GetComponent<AudioSource>();
         levelTime = FindObjectOfType<LevelTime>();
+        fuel = GetComponent<Fuel>();
     }
 
 
     void Update()
     {
-        if (state == State.Alive && !TimeUp())
+        if (!isTransitioning && !TimeUp() && !FuelUp())
         {
             RespondToThrustInput();
             RespondToRotateInput();
         }
 
         if (TimeUp()) StartTimeUpSequence();
+
+        if (FuelUp()) StartFuelUpSequence();
 
         if (Debug.isDebugBuild) RespondToDebugKeys();
     }
@@ -54,6 +57,7 @@ public class Rocket : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.L))
         {
             LoadNextLevel();
+
         } else if (Input.GetKeyDown(KeyCode.C)) 
         {
             collisionsDisabled = !collisionsDisabled;
@@ -65,10 +69,17 @@ public class Rocket : MonoBehaviour
         if (levelTime.GetSecondsLeft() <= 0) return true;
         else return false;
     }
-    
+
+    private bool FuelUp()
+    {
+        if (fuel.GetRemainingFuel() <= 0) return true;
+        else return false;
+    }
+
     private void RespondToRotateInput()
     {
-        rb.freezeRotation = true;
+        rb.angularVelocity = Vector3.zero; // remove rotation due to phsysics
+
         float rotationThisFrame = rcsThrust * Time.deltaTime;
 
         if (Input.GetKey(KeyCode.LeftArrow))
@@ -79,7 +90,6 @@ public class Rocket : MonoBehaviour
         {
             transform.Rotate(-Vector3.forward * rotationThisFrame);
         }
-        rb.freezeRotation = false;
     }
 
     private void RespondToThrustInput()
@@ -87,12 +97,18 @@ public class Rocket : MonoBehaviour
         if (Input.GetKey(KeyCode.Space))
         {
             ApplyThrust();
+            fuel.DecreaseFuel();
         }
         else
         {
-            audioSource.Stop();
-            mainEngineParticles.Stop();
+            StopApplyingThrust();
         }
+    }
+
+    private void StopApplyingThrust()
+    {
+        audioSource.Stop();
+        mainEngineParticles.Stop();
     }
 
     private void ApplyThrust()
@@ -106,7 +122,7 @@ public class Rocket : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (state != State.Alive || collisionsDisabled) return; // just one hit then die ignoring collisions
+        if (isTransitioning || collisionsDisabled) return; // just one hit then die ignoring collisions
 
         switch (collision.gameObject.tag)
         {
@@ -123,7 +139,7 @@ public class Rocket : MonoBehaviour
 
     private void StartDeathSequence()
     {
-        state = State.Dying;
+        isTransitioning = true;
         DisappearWhenDead();
         audioSource.Stop();
         audioSource.PlayOneShot(death);
@@ -133,8 +149,19 @@ public class Rocket : MonoBehaviour
 
     private void StartTimeUpSequence()
     {
-        if(state != State.Alive) return;
-        state = State.Dying;
+        if(isTransitioning) return;
+        isTransitioning = true;
+        DisappearWhenDead();
+        audioSource.Stop();
+        audioSource.PlayOneShot(death);
+        deathParticles.Play();
+        Invoke("LoadCurrentLevel", death.length);
+    }
+
+    private void StartFuelUpSequence()
+    {
+        if (isTransitioning) return;
+        isTransitioning = true;
         DisappearWhenDead();
         audioSource.Stop();
         audioSource.PlayOneShot(death);
@@ -144,7 +171,7 @@ public class Rocket : MonoBehaviour
 
     private void StartSuccessSequence()
     {
-        state = State.Transcending;
+        isTransitioning = true;
         audioSource.Stop();
         audioSource.PlayOneShot(success);
         successParticles.Play();
@@ -180,14 +207,15 @@ public class Rocket : MonoBehaviour
     private void LoadNextLevel()
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+        int nextSceneIndex = currentSceneIndex + 1;
 
         if (currentSceneIndex < SceneManager.sceneCountInBuildSettings - 1)
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+            SceneManager.LoadScene(nextSceneIndex);
         }
         else
         {
-            // TODO ADD FINAL SCENE
+            SceneManager.LoadScene(0);
         }
 
     }

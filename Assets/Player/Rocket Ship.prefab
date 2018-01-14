@@ -58,6 +58,7 @@ GameObject:
   - component: {fileID: 54142804863692522}
   - component: {fileID: 82121728376766988}
   - component: {fileID: 114971853583925378}
+  - component: {fileID: 114762117166595162}
   m_Layer: 0
   m_Name: Rocket Ship
   m_TagString: Untagged
@@ -307,8 +308,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1211000211666942}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -29.39, y: -4.67, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -29.8, y: 0.7, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4369860916918554}
@@ -627,13 +628,13 @@ Light:
   m_Enabled: 1
   serializedVersion: 8
   m_Type: 0
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 14.2
-  m_Range: 14.66
-  m_SpotAngle: 50
+  m_Color: {r: 0.958215, g: 1, b: 0.24264705, a: 1}
+  m_Intensity: 26.1
+  m_Range: 16
+  m_SpotAngle: 52
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 0
+    m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -690,6 +691,20 @@ Light:
   m_UseColorTemperature: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+--- !u!114 &114762117166595162
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1211000211666942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b63e18d91bdd3c4d82c9d0241050b07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxFuel: 100
+  remainingFuel: 0
+  consumptionPerSecond: 10
 --- !u!114 &114971853583925378
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -710,7 +725,6 @@ MonoBehaviour:
   mainEngineParticles: {fileID: 198350869568466320}
   successParticles: {fileID: 198234809320461762}
   deathParticles: {fileID: 198234809320461762}
-  state: 0
 --- !u!135 &135364098002028632
 SphereCollider:
   m_ObjectHideFlags: 1

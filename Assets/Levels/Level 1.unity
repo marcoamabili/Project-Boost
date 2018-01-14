@@ -343,11 +343,6 @@ Prefab:
       propertyPath: m_Pivot.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 114369254945394676, guid: eb9bd7a4a7141094bb3d8b57d9893a9f,
-        type: 2}
-      propertyPath: levelSeconds
-      value: 60
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: eb9bd7a4a7141094bb3d8b57d9893a9f, type: 2}
   m_IsPrefabParent: 0
@@ -1023,9 +1018,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15ba568e90600ea4ba61986cd4fd43f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementVector: {x: 20, y: 0, z: 0}
+  movementVector: {x: 15, y: 0, z: 0}
   movementFactor: 0
-  period: 4
+  period: 5
 --- !u!1001 &1787076857
 Prefab:
   m_ObjectHideFlags: 0
@@ -1144,7 +1139,7 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4910377046667098, guid: 79a03f09ffce7f540b5973b87b34ad9d, type: 2}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: -7
       objectReference: {fileID: 0}
     - target: {fileID: 4910377046667098, guid: 79a03f09ffce7f540b5973b87b34ad9d, type: 2}
       propertyPath: m_LocalPosition.y
